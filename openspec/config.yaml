@@ -1,0 +1,86 @@
+schema: spec-driven
+
+context: |
+	Project type: educational monorepo for Conduit (RealWorld).
+	Goal: keep backend and frontend together to simplify containerized execution and teaching demos.
+	Primary audience: students learning full-stack architecture, API design, testing, and containerized workflows.
+	Teaching mode: each change should be explainable in class with explicit rationale, scope, and validation steps.
+
+	Repository layout:
+	- Backend: realworld-springboot-java (Spring Boot 4, Gradle, Java 17+)
+	- Frontend: realworld-app-angular-v20 (Angular CLI app, standalone-first architecture)
+	- Integration: docker-compose.yml at repository root
+	- OpenSpec workspace: openspec/
+
+	Backend details:
+	- Build tool: Gradle Wrapper (./gradlew)
+	- Main language/runtime: Java 17+ (IDE and Gradle must not use Java 8)
+	- Testing and quality gate: JUnit + JaCoCo with strict coverage verification in realworld-springboot-java/test.gradle
+	- App config: realworld-springboot-java/src/main/resources/application.properties
+	- Container: realworld-springboot-java/Dockerfile
+
+	Frontend details:
+	- Framework: Angular application in realworld-app-angular-v20/
+	- Build/test commands from package.json: npm run start, npm run build, npm run test
+	- Environment API URL: src/environments/environment*.ts
+	- Container: realworld-app-angular-v20/Dockerfile with nginx
+
+	Runtime integration:
+	- docker-compose starts backend on localhost:8080 and frontend on localhost:4200
+	- CORS must stay compatible with frontend origin(s)
+	- Coverage workflows and docs are important teaching material (HOWTO_MEASURE_COVERAGE.md)
+
+	Working style constraints:
+	- Prefer minimal, incremental changes over broad refactors.
+	- Preserve educational clarity and readability in docs and code.
+	- Keep compatibility with existing Docker-based workflow.
+	- Keep language in artifacts concise and implementation-oriented.
+	- Favor explicit assumptions and short definitions for terms students may not know.
+	- Prefer examples that can be demonstrated live in class.
+
+rules:
+	proposal:
+		- Always state whether impact is Backend, Frontend, Infrastructure, or Cross-cutting.
+		- Explicitly list affected directories using repository-relative paths.
+		- For cross-cutting changes, describe contract/API effects between frontend and backend.
+		- Include teaching impact: what students/instructors gain and what might become harder.
+		- Avoid implementation detail; keep focus on why and expected outcomes.
+		- Add a short "Learning Objectives" section with 2-4 measurable outcomes.
+		- Add a "Prerequisites" section listing required prior knowledge.
+		- Add an "In-Class Demo Plan" section describing a 5-15 minute demonstration.
+		- Prefer plain language over jargon; define unavoidable technical terms.
+		- Keep proposal length suitable for classroom review (roughly 1-2 pages).
+
+	specs:
+		- Write requirements as observable behavior, not framework internals.
+		- Every requirement must include at least one testable scenario with concrete outcomes.
+		- If API behavior changes, specify endpoint, request/response contract, and error behavior.
+		- If UI behavior changes, specify route/view state, user action, and visible result.
+		- Include compatibility notes for Docker Compose flow when runtime behavior changes.
+		- Include CORS/auth implications when browser-to-API communication is affected.
+		- For each requirement, add a brief "Teaching Note" explaining why it matters conceptually.
+		- Prefer scenarios that can be reproduced by students using local tooling.
+		- Include at least one negative scenario when behavior can fail (validation, auth, or integration).
+		- Keep requirement language precise enough to grade implementation correctness.
+
+	design:
+		- Map proposed changes to concrete files/components in both subprojects when applicable.
+		- Discuss trade-offs between simplicity for teaching and production-grade architecture.
+		- Document data flow across frontend -> API -> persistence when touched.
+		- Include rollout/rollback notes that work locally with Docker Compose.
+		- Highlight risks to coverage gates, CI stability, and local developer setup.
+		- Include a "Concepts Reinforced" section (e.g., REST contracts, CORS, coverage, container networking).
+		- Include at least one rejected alternative with a short pedagogical rationale.
+		- Prefer design diagrams or bullet flow descriptions that are easy to explain on a whiteboard.
+		- Keep implementation complexity proportional to course level.
+
+	tasks:
+		- Group tasks by area: Backend, Frontend, Integration, Validation, Documentation.
+		- Keep tasks small, sequential, and verifiable by command or observable behavior.
+		- Include explicit validation tasks with concrete commands (Gradle, npm, docker compose).
+		- Add a documentation update task whenever behavior, setup, or teaching flow changes.
+		- For cross-cutting work, include at least one end-to-end verification task.
+		- Add a final "Classroom Verification" task group with reproducible demo steps.
+		- Mark tasks that are suitable as student exercises versus instructor-led setup.
+		- Ensure each task has a clear done condition that can be evaluated quickly.
+		- Prefer incremental checkpoints that allow partial grading and feedback.

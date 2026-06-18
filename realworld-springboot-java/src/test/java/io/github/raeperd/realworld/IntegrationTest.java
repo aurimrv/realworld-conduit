@@ -67,7 +67,7 @@ class IntegrationTest {
                 .andExpect(validUserModel())
                 .andReturn().getResponse().getContentAsString();
 
-        token = objectMapper.readTree(contentAsString).get("user").get("token").textValue();
+        token = objectMapper.readTree(contentAsString).get("user").get("token").stringValue();
     }
 
     @Order(4)

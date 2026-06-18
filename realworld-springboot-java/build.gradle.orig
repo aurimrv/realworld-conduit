@@ -41,12 +41,10 @@ jacoco {
 }
 
 jacocoTestReport {
-    // Indica ao Gradle para usar o arquivo .exec gerado pelo agente no Docker
-    executionData.setFrom(fileTree(project.rootDir).include("jacoco/*.exec"))
-    
+    executionData.setFrom(fileTree(project.rootDir).include("**/*.exec"))
     reports {
-        html.required = true
         xml.required = true
+        html.required = true
     }
 }
 

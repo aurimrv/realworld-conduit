@@ -41,10 +41,10 @@ cd /home/ubuntu/realworld-conduit/realworld-conduit/
 Execute o seguinte comando para construir as imagens Docker e iniciar os serviços definidos no `docker-compose.yml`:
 
 ```bash
-docker-compose up --build -d
+docker compose up --build -d
 ```
 
-*   `docker-compose up`: Inicia os serviços.
+*   `docker compose up`: Inicia os serviços.
 *   `--build`: Reconstrói as imagens Docker. Use isso sempre que fizer alterações no código-fonte ou nos Dockerfiles.
 *   `-d`: Executa os contêineres em modo "detached" (em segundo plano).
 
@@ -66,7 +66,7 @@ O backend está configurado para coletar dados de cobertura de código usando o 
 3.  **Pare os contêineres** para que o agente JaCoCo finalize a escrita do arquivo `jacoco.exec`:
 
     ```bash
-    docker-compose stop
+    docker compose stop
     ```
 
     O arquivo `jacoco.exec` será salvo no diretório `./realworld-springboot-java/jacoco/` na raiz do seu projeto local.
@@ -85,7 +85,7 @@ O backend está configurado para coletar dados de cobertura de código usando o 
 Para ver o status dos contêineres em execução:
 
 ```bash
-docker-compose ps
+docker compose ps
 ```
 
 ### 6. Visualizar Logs
@@ -93,8 +93,8 @@ docker-compose ps
 Para visualizar os logs de um serviço específico (por exemplo, `frontend` ou `backend`):
 
 ```bash
-docker-compose logs -f frontend
-docker-compose logs -f backend
+docker compose logs -f frontend
+docker compose logs -f backend
 ```
 
 ### 7. Parar e Remover os Contêineres
@@ -102,13 +102,13 @@ docker-compose logs -f backend
 Para parar e remover todos os contêineres, redes e volumes criados pelo `docker-compose.yml`:
 
 ```bash
-docker-compose down
+docker compose down
 ```
 
 Se você quiser remover também as imagens:
 
 ```bash
-docker-compose down --rmi all
+docker compose down --rmi all
 ```
 
 ---
