@@ -4,9 +4,10 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-RUN npm run build -- --configuration production
+RUN npm run build -- --configuration development
+# Salvar JS originais ANTES da instrumentação (para relatório limpo)
+RUN mkdir -p /tmp/original-js && cp dist/realworld-app/browser/*.js /tmp/original-js/
 # Instrumentar o build com Istanbul para expor window.__coverage__ no browser
-# usar diretório temporário preserva HTML/CSS/assets; copiar só os JS evita perder index.html
 RUN npx nyc instrument dist/realworld-app/browser/ /tmp/instrumented/ && \
     cp /tmp/instrumented/*.js dist/realworld-app/browser/
 
@@ -14,6 +15,7 @@ RUN npx nyc instrument dist/realworld-app/browser/ /tmp/instrumented/ && \
 FROM nginx:alpine
 # Node.js necessário para o coverage-collector (sidecar que persiste cobertura)
 RUN apk add --no-cache nodejs
+COPY --from=build /tmp/original-js /usr/share/nginx/html/original-js
 COPY --from=build /app/dist/realworld-app/browser /usr/share/nginx/html
 # Copiar configuração customizada do nginx para lidar com rotas do Angular
 COPY nginx.conf /etc/nginx/conf.d/default.conf

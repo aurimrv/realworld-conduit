@@ -4,7 +4,7 @@ const path = require('path');
 
 const coverageJsonPath = 'coverage/coverage.json';
 const reportDir = 'coverage/frontend';
-const instrumentedSrc = 'coverage/instrumented';
+const instrumentedSrc = 'coverage/original-js';  // JS limpos (sem instrumentação)
 const instrumentedDst = 'instrumented';
 
 if (!fs.existsSync(coverageJsonPath)) {
@@ -36,66 +36,12 @@ for (const [fp, data] of Object.entries(coverage)) {
   coverageMap.addFileCoverage(fc);
 }
 
-// ── Beautifier O(n) para JS minificado ──────────────────
-function beautifyJS(code) {
-  const out = [];
-  let indent = 0;
-  let current = '';
-  for (let i = 0; i < code.length; i++) {
-    const ch = code[i];
-    if (ch === '{') {
-      current += ch;
-      out.push('  '.repeat(indent) + current.trim());
-      current = '';
-      indent++;
-    } else if (ch === '}') {
-      if (current.trim()) {
-        out.push('  '.repeat(indent) + current.trim());
-        current = '';
-      }
-      indent = Math.max(0, indent - 1);
-      current += ch;
-      // pega o próximo não-espaço para decidir se fecha a linha
-      let j = i + 1;
-      while (j < code.length && code[j] === ' ') j++;
-      if (j < code.length) {
-        const next = code[j];
-        if (next === ';' || next === '}') {
-          current += next;
-          out.push('  '.repeat(indent) + current.trim());
-          current = '';
-          i = next === ';' ? j : j - 1;
-          if (next === '}') i = j - 1;
-          else i = j;
-        }
-      }
-      if (current.trim()) {
-        out.push('  '.repeat(indent) + current.trim());
-        current = '';
-      }
-    } else if (ch === ';') {
-      current += ch;
-      out.push('  '.repeat(indent) + current.trim());
-      current = '';
-    } else {
-      current += ch;
-    }
-  }
-  if (current.trim()) out.push('  '.repeat(indent) + current.trim());
-  return out.join('\n');
-}
-
 const context = new Context({
   dir: reportDir,
   coverageMap,
   defaultSummarizer: 'pkg',
   watermarks: { statements: [50,80], functions: [50,80], branches: [50,80], lines: [50,80] },
-  sourceFinder: (fp) => {
-    if (!fs.existsSync(fp)) return null;
-    const raw = fs.readFileSync(fp, 'utf-8');
-    const lines = raw.split('\n');
-    return lines.length < 20 ? beautifyJS(raw) : raw;
-  }
+  sourceFinder: (fp) => (fs.existsSync(fp) ? fs.readFileSync(fp, 'utf-8') : null)
 });
 
 const sf = new SummarizerFactory(coverageMap, 'pkg');

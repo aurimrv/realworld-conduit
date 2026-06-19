@@ -3,6 +3,7 @@ const fs = require('fs');
 
 const OUTPUT = '/app/coverage/coverage.json';
 const DOCKER_PREFIX = '/app/dist/realworld-app/browser/';
+const ORIGINAL_PREFIX = '/usr/share/nginx/html/original-js/';
 
 function loadExisting() {
   try {
