@@ -1,6 +1,6 @@
-# RealWorld App com Docker e Cobertura JaCoCo
+# RealWorld App com Docker e Cobertura de Código
 
-Este projeto demonstra como executar o frontend (Angular) e o backend (Spring Boot) da aplicação RealWorld usando Docker e Docker Compose, com a funcionalidade adicional de coletar informações de cobertura de código do backend usando JaCoCo.
+Este projeto demonstra como executar o frontend (Angular) e o backend (Spring Boot) da aplicação RealWorld usando Docker e Docker Compose, com coleta automática de cobertura de código em ambas as camadas (backend via JaCoCo, frontend via Istanbul).
 
 ## Pré-requisitos
 

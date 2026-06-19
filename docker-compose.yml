@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     build:
@@ -24,6 +22,10 @@ services:
       - "4200:80"
     depends_on:
       - backend
+    volumes:
+      # Mapeia a pasta local para a pasta de cobertura dentro do contêiner
+      # O arquivo coverage.json aparecerá em ./realworld-app-angular-v20/coverage/coverage.json
+      - ./realworld-app-angular-v20/coverage:/app/coverage
     networks:
       - realworld-net
 

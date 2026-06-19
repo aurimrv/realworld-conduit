@@ -12,5 +12,34 @@
 </head>
 <body>
   <app-root></app-root>
+  <script>
+// Polyfill: Istanbul instrumenta para Node.js (global), browser precisa de window
+window.global = window;
+window.__coverage__ = window.__coverage__ || {};
+
+(function() {
+  var INTERVAL = 5000;
+  var lastSent = '';
+
+  function sendCoverage() {
+    if (!window.__coverage__) return;
+    var current = JSON.stringify(window.__coverage__);
+    if (current === lastSent) return;
+    lastSent = current;
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/coverage/save', true);
+    xhr.setRequestHeader('Content-Type', 'text/plain');
+    try { xhr.send(current); } catch(e) {}
+  }
+
+  setInterval(sendCoverage, INTERVAL);
+  window.addEventListener('beforeunload', function() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/coverage/save', false);
+    xhr.setRequestHeader('Content-Type', 'text/plain');
+    try { xhr.send(JSON.stringify(window.__coverage__ || {})); } catch(e) {}
+  });
+})();
+  </script>
 </body>
 </html>
