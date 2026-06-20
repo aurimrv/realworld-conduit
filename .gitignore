@@ -29,3 +29,5 @@ replay_pid*
 **/jacoco/
 **/instrumented/
 **/coverage/
+**/original-js/
+**/.nyc_output/

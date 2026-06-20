@@ -1,24 +1,55 @@
-# Guia de Coleta e Geração de Relatório JaCoCo com Docker
+# Guia de Cobertura de Código — Backend e Frontend
 
-Para garantir que o arquivo `jacoco.exec` seja salvo corretamente e que você consiga gerar o relatório de cobertura, siga as instruções abaixo.
+Este projeto coleta cobertura de código em **ambas as camadas** automaticamente:
+- **Backend** (Spring Boot): JaCoCo agent grava `jacoco.exec`
+- **Frontend** (Angular): Istanbul instrumenta o JS e um coletor Node.js persiste `coverage.json`
 
-## 1. Como Parar o Contêiner Corretamente
+Basta interagir com a aplicação, parar os containers e gerar os relatórios.
 
-O agente JaCoCo escreve o arquivo `jacoco.exec` no sistema de arquivos quando a JVM é encerrada de forma graciosa. O `Ctrl+C` no terminal onde o `docker-compose up` está rodando pode enviar um sinal de interrupção abrupto.
+## Fluxo Completo (Backend + Frontend)
 
-**A maneira recomendada é usar o comando `stop` em um novo terminal:**
+```bash
+# 1. Subir containers
+docker compose up --build -d
 
-1. Mantenha o `docker-compose up` rodando.
-2. Abra um **novo terminal** na mesma pasta do projeto.
-3. Execute o comando:
+# 2. Resetar cobertura (opcional, para começar do zero)
+curl -s http://localhost:4200/api/coverage/reset
 
-    ```bash
-    docker compose stop
-    ```
+# 3. Abrir http://localhost:4200 no navegador e explorar
 
-    *Este comando envia um sinal `SIGTERM` para a JVM, permitindo que ela execute os "shutdown hooks" e o agente JaCoCo salve o arquivo.*
+# 4. Parar containers (ambos os arquivos de cobertura são salvos)
+docker compose stop
 
-4. Verifique se o arquivo foi criado em: `./realworld-springboot-java/jacoco/jacoco.exec`.
+# 5. Gerar relatórios
+cd realworld-springboot-java && ./gradlew jacocoTestReport && cd ..
+cd realworld-app-angular-v20 && npm run coverage:report && cd ..
+
+# 6. Abrir relatórios
+# Backend:  realworld-springboot-java/build/reports/jacoco/jacocoTestReport/html/index.html
+# Frontend: realworld-app-angular-v20/coverage/frontend/index.html
+```
+
+---
+
+## Limpeza (nova coleta)
+
+```bash
+sudo rm -rf realworld-app-angular-v20/coverage/coverage.json \
+               realworld-app-angular-v20/coverage/instrumented \
+               realworld-app-angular-v20/coverage/original-js \
+               realworld-app-angular-v20/coverage/frontend \
+               realworld-app-angular-v20/.nyc_output \
+               realworld-app-angular-v20/instrumented \
+               realworld-springboot-java/jacoco/jacoco.exec
+```
+
+---
+
+## Backend — JaCoCo (detalhes)
+
+O agente JaCoCo escreve o arquivo `jacoco.exec` no sistema de arquivos quando a JVM é encerrada. O `docker compose stop` envia `SIGTERM`, permitindo que os "shutdown hooks" salvem o arquivo.
+
+Verifique se o arquivo foi criado em: `./realworld-springboot-java/jacoco/jacoco.exec`.
 
 ---
 
@@ -112,4 +143,19 @@ Isso permite ver quais partes do código foram exercitadas pela sua interação 
 - **Limpeza**: Antes de uma nova coleta, é recomendável apagar os arquivos antigos (`jacoco.exec` e `coverage.json`) para não misturar os dados de execuções diferentes.
 - **Cobertura cumulativa**: O `coverage.json` do frontend é **acumulativo entre ciclos de `up`/`stop`** — se você subir e parar os containers várias vezes, os contadores se somam. Para resetar a cobertura: `curl -s http://localhost:4200/api/coverage/reset` (containers rodando) ou `echo '{}' > realworld-app-angular-v20/coverage/coverage.json` (containers parados).
 - **Logs**: Se os arquivos continuarem vazios, verifique os logs ao parar: `docker compose logs backend` e `docker compose logs frontend`.
+
+## Notas de implementação (importante)
+
+- **Preservação das fontes originais:** o processo de build agora copia os arquivos JavaScript não instrumentados (originais) antes da instrumentação para `realworld-app-angular-v20/coverage/original-js`. Isso garante que o relatório mostre o código legível e que os mapeamentos de cobertura (linhas) correspondam ao código exibido.
+- **Instrumentação separada:** a instrumentação (`nyc instrument`) é aplicada a uma cópia separada que é servida em runtime; nunca instrumente ou modifique os arquivos que serão usados como fonte do relatório.
+- **Geração do relatório:** o gerador de relatório (`generate-report.js`) usa as fontes em `coverage/original-js` como `sourceFinder`, evitando que o HTML de cobertura contenha contadores `cov_...` ou código transformado.
+- **Rebuild obrigatório após alterações:** sempre reconstrua a imagem quando mudar o `Dockerfile` ou o `entrypoint.sh`:
+
+```bash
+docker compose up --build -d
+```
+
+- **Automação e reprodução:** há um script de reprodução com Playwright em `realworld-app-angular-v20/test-coverage.spec.js` que executa os fluxos principais e grava cobertura para o coletor. Use-o para reproduzir a mesma sequência de interações que você faria manualmente.
+
+Se precisar, posso também adicionar um link direto deste HOWTO para o `README.md` do repositório — quer que eu adicione isso? 
 - **Frontend sem interação**: Se você não abrir o frontend no navegador, o `coverage.json` não será gerado (ou estará vazio), e o relatório mostrará 0% de cobertura.

@@ -25,8 +25,10 @@ class UserModel {
                 valueOf(user.getEmail()),
                 valueOf(user.getName()),
                 token,
-                user.getBio(),   // Alterado de "" para user.getBio()
-                valueOf(user.getImage())); // Alterado de "" para user.getImage()
+                //user.getBio(),   // Alterado de "" para user.getBio()
+                //valueOf(user.getImage())); // Alterado de "" para user.getImage()
+                user.getBio() == null ? "" : user.getBio(),
+                user.getImage() == null ? "" : valueOf(user.getImage()));
     }
 
 }
